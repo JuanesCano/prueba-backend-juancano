@@ -6,10 +6,10 @@ import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ProductosService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async create(data: CreateProductoDto) {
-    const producto = await this.prisma.productos.create({ data });
+    const producto = await this.prisma.productos.create({  data: data as Prisma.ProductoCreateInput});
     return producto;
   }
 
@@ -19,18 +19,18 @@ export class ProductosService {
   }
 
   async findOne(id: string) {
-    const productos = await this.prisma.productos.findFirst({ where: { id } });
+    const producto = await this.prisma.productos.findFirst({ where: { id } });
 
-    if (!productos) {
+    if (!producto) {
       throw new NotFoundException(`Producto no encontrado con el id: ${id}`);
     }
 
-    return productos;
+    return producto;
   }
 
   async update(id: string, data: UpdateProductoDto) {
     await this.findOne(id);
-    return this.prisma.productos.update({ where: { id }, data });
+    return this.prisma.productos.update({ where: { id },  data: data as Prisma.ProductoUpdateInput });
   }
 
   async remove(id: string) {
