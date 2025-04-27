@@ -3,7 +3,7 @@ import { ProductosService } from './productos.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { FastifyReply } from 'fastify';
 
-jest.mock('../../common/helpers/response', () => ({
+jest.mock('../common/helpers/response.ts', () => ({
   response: jest.fn().mockImplementation((reply, status, success, data, message) => ({
     status,
     success,

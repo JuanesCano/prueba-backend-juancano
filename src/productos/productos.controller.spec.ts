@@ -3,7 +3,6 @@ import { ProductosController } from './productos.controller';
 import { ProductosService } from './productos.service';
 import { CreateProductoDto } from './dto/create-producto.dto';
 import { UpdateProductoDto } from './dto/update-producto.dto';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { FastifyReply } from 'fastify';
 
 describe('ProductosController', () => {
@@ -19,11 +18,54 @@ describe('ProductosController', () => {
   const mockDate = new Date();
 
   const mockService = {
-    create: jest.fn<(dto: CreateProductoDto, reply: FastifyReply) => Promise<any>>(),
-    findAll: jest.fn<(reply: FastifyReply) => Promise<any>>(),
-    findOne: jest.fn<(id: string, reply: FastifyReply) => Promise<any>>(),
-    update: jest.fn<(id: string, dto: UpdateProductoDto, reply: FastifyReply) => Promise<any>>(),
-    remove: jest.fn<(id: string, reply: FastifyReply) => Promise<any>>(),
+    create: jest.fn((dto: CreateProductoDto, reply: FastifyReply) => 
+      Promise.resolve({ 
+        id: '1', 
+        ...dto,
+        createdAt: mockDate,
+        updatedAt: mockDate
+      })
+    ),
+    findAll: jest.fn((reply: FastifyReply) => 
+      Promise.resolve([{ 
+        id: '1', 
+        name: 'Test Product', 
+        price: 100, 
+        stock: 10,
+        createdAt: mockDate,
+        updatedAt: mockDate
+      }])
+    ),
+    findOne: jest.fn((id: string, reply: FastifyReply) => 
+      Promise.resolve({ 
+        id, 
+        name: 'Test Product', 
+        price: 100, 
+        stock: 10,
+        createdAt: mockDate,
+        updatedAt: mockDate
+      })
+    ),
+    update: jest.fn((id: string, dto: UpdateProductoDto, reply: FastifyReply) => 
+      Promise.resolve({ 
+        id, 
+        name: dto.name || 'Test Product',
+        price: 100,
+        stock: 10,
+        createdAt: mockDate,
+        updatedAt: mockDate
+      })
+    ),
+    remove: jest.fn((id: string, reply: FastifyReply) => 
+      Promise.resolve({ 
+        id, 
+        name: 'Test Product', 
+        price: 100, 
+        stock: 10,
+        createdAt: mockDate,
+        updatedAt: mockDate
+      })
+    ),
   };
 
   beforeEach(async () => {
@@ -52,14 +94,6 @@ describe('ProductosController', () => {
         price: 100,
         stock: 10,
       };
-      const expectedProduct = { 
-        id: '1', 
-        ...createProductoDto,
-        createdAt: mockDate,
-        updatedAt: mockDate
-      };
-
-      mockService.create.mockResolvedValue(expectedProduct);
 
       await controller.create(createProductoDto, mockReply);
       
@@ -70,19 +104,6 @@ describe('ProductosController', () => {
 
   describe('findAll', () => {
     it('should return all products', async () => {
-      const expectedProducts = [
-        { 
-          id: '1', 
-          name: 'Test Product', 
-          price: 100, 
-          stock: 10,
-          createdAt: mockDate,
-          updatedAt: mockDate
-        }
-      ];
-
-      mockService.findAll.mockResolvedValue(expectedProducts);
-
       await controller.findAll(mockReply);
       
       expect(service.findAll).toHaveBeenCalledWith(mockReply);
@@ -92,17 +113,6 @@ describe('ProductosController', () => {
 
   describe('findOne', () => {
     it('should return a product', async () => {
-      const expectedProduct = { 
-        id: '1', 
-        name: 'Test Product', 
-        price: 100, 
-        stock: 10,
-        createdAt: mockDate,
-        updatedAt: mockDate
-      };
-
-      mockService.findOne.mockResolvedValue(expectedProduct);
-
       await controller.findOne('1', mockReply);
       
       expect(service.findOne).toHaveBeenCalledWith('1', mockReply);
@@ -112,16 +122,6 @@ describe('ProductosController', () => {
   describe('update', () => {
     it('should update a product', async () => {
       const updateDto: UpdateProductoDto = { name: 'Updated' };
-      const expectedProduct = { 
-        id: '1', 
-        name: 'Updated',
-        price: 100,
-        stock: 10,
-        createdAt: mockDate,
-        updatedAt: mockDate
-      };
-
-      mockService.update.mockResolvedValue(expectedProduct);
 
       await controller.update('1', updateDto, mockReply);
       
@@ -131,17 +131,6 @@ describe('ProductosController', () => {
 
   describe('remove', () => {
     it('should remove a product', async () => {
-      const expectedProduct = { 
-        id: '1', 
-        name: 'Test Product', 
-        price: 100, 
-        stock: 10,
-        createdAt: mockDate,
-        updatedAt: mockDate
-      };
-
-      mockService.remove.mockResolvedValue(expectedProduct);
-
       await controller.remove('1', mockReply);
       
       expect(service.remove).toHaveBeenCalledWith('1', mockReply);
