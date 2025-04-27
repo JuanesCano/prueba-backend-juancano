@@ -1,0 +1,35 @@
+name: CI Pipeline Run Project
+
+on:
+  push:
+    branches: [ juan-cano ]
+  pull_request:
+    branches: [ juan-cano ]
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run unit tests
+      run: npm test
+
+    - name: Run API (smoke test)
+      run: |
+        npm run build
+        npm run start:prod &
+        sleep 10
+        curl http://localhost:3000/api/health
