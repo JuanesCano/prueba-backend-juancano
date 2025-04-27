@@ -5,7 +5,8 @@ import {
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
 import * as dotenv from 'dotenv';
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
+import cors from '@fastify/cors';
 
 dotenv.config();
 async function bootstrap() {
@@ -13,6 +14,18 @@ async function bootstrap() {
     AppModule,
     new FastifyAdapter({logger: true}),
   );
+
+  app.register(cors, {
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS']
+  })
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true
+    })
+  )
 
   const logger = new Logger('bootstrap');
 

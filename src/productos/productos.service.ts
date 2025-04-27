@@ -23,9 +23,6 @@ export class ProductosService {
         'Producto creado exitosamente',
       );
     } catch (error) {
-      if (error.code === 'P2002') {
-        return response(reply, 400, false, null, 'El producto ya existe');
-      }
       return response(
         reply,
         500,
@@ -54,10 +51,17 @@ export class ProductosService {
 
   async update(id: string, data: UpdateProductoDto, reply: FastifyReply) {
     try {
+      const existProducto = await this.prisma.productos.findUnique({ where: { id } });
+      
+      if(!existProducto){
+        return response(reply, 404, false, '', "El producto no existe");
+      }
+
       const producto = await this.prisma.productos.update({
         where: { id },
         data: data as Prisma.productosUpdateInput,
       });
+
       return response(
         reply,
         200,
@@ -66,10 +70,6 @@ export class ProductosService {
         'Producto actualizado exitosamente',
       );
     } catch (error) {
-      if (error.code === 'P2025') {
-        // Código de error de Prisma para registro no encontrado
-        return response(reply, 404, false, null, 'El producto no existe');
-      }
       return response(
         reply,
         500,
@@ -82,12 +82,16 @@ export class ProductosService {
 
   async remove(id: string, reply: FastifyReply) {
     try {
-      await this.prisma.productos.delete({ where: { id } });
+      const existProducto = await this.prisma.productos.findUnique({ where: { id } });
+
+      if(!existProducto){
+        return response(reply, 404, false, '', "El producto no existe");
+      }
+
+      const producto = await this.prisma.productos.delete({ where: { id } });
+
       return response(reply, 200, true, null, 'Producto eliminado exitosamente');
     } catch (error) {
-      if (error.code === 'P2025') { // Código de error de Prisma para registro no encontrado
-        return response(reply, 404, false, null, 'El producto no existe');
-      }
       return response(reply, 500, false, null, 'Error al eliminar el producto');
     }
   }
