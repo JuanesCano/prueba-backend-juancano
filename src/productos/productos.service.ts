@@ -3,7 +3,7 @@ import { CreateProductoDto } from './dto/create-producto.dto';
 import { UpdateProductoDto } from './dto/update-producto.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
-import { response } from 'src/common/helpers/response';
+import { response } from '../common/helpers/response';
 import { FastifyReply } from 'fastify';
 
 @Injectable()
