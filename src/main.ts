@@ -13,11 +13,14 @@ async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter({logger: true}),
+    {bufferLogs: true}
   );
 
-  app.register(cors, {
+  await app.register(cors, {
     origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS']
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
   })
 
   app.useGlobalPipes(
@@ -30,7 +33,7 @@ async function bootstrap() {
   const logger = new Logger('bootstrap');
 
   const port = Number(process.env.PORT) || 3000;
-  const host = process.env.HOST || '127.0.0.1';
+  const host = process.env.HOST || '0.0.0.0';
 
   await app.listen(port, host);
   logger.log(`servidor corriendo por el puerto ${port}`)

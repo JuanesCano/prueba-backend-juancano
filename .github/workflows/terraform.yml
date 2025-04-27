@@ -29,7 +29,24 @@ jobs:
 
     - name: Run API (smoke test)
       run: |
-        npm run build
+       # Start server in background
         npm run start:prod &
-        sleep 10
-        curl http://localhost:3000/api/health
+        
+        # Wait for server to start
+        sleep 15
+        
+        # Check health endpoint
+        curl -v http://localhost:3000/api/health
+        
+        # Verify server process is running
+        ps aux | grep node
+        
+        # If health check fails, exit with error
+        if ! curl -s -f http://localhost:3000/api/health > /dev/null; then
+          echo "Health check failed"
+          exit 1
+        fi
+
+    - name: Stop server
+      if: always()
+      run: pkill -f "node dist/src/main" || true
