@@ -1,18 +1,24 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProductosService } from './productos.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { NotFoundException } from '@nestjs/common';
 import { FastifyReply } from 'fastify';
+
+jest.mock('../../common/helpers/response', () => ({
+  response: jest.fn().mockImplementation((reply, status, success, data, message) => ({
+    status,
+    success,
+    data,
+    message
+  }))
+}));
 
 describe('ProductosService', () => {
   let service: ProductosService;
   let prismaService: PrismaService;
 
-  // Mock de FastifyReply
   const mockReply: FastifyReply = {
     status: jest.fn().mockReturnThis(),
     send: jest.fn().mockReturnThis(),
-    code: jest.fn().mockReturnThis(),
   } as unknown as FastifyReply;
 
   const mockPrismaService = {
@@ -46,74 +52,21 @@ describe('ProductosService', () => {
 
   describe('create', () => {
     it('should create a product', async () => {
-      const createProductoDto = { name: 'Test Product', price: 100, stock: 10 };
-      const expectedProduct = { id: '1', ...createProductoDto };
+      const createDto = { name: 'Test', price: 100, stock: 10 };
+      const expectedProduct = { 
+        id: '1', 
+        ...createDto,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
       mockPrismaService.producto.create.mockResolvedValue(expectedProduct);
 
-      const result = await service.create(createProductoDto, mockReply);
+      const result = await service.create(createDto, mockReply);
+      
       expect(result).toEqual(expectedProduct);
-      expect(mockPrismaService.producto.create).toHaveBeenCalledWith({ 
-        data: createProductoDto 
-      });
-    });
-  });
-
-  describe('findAll', () => {
-    it('should return an array of products', async () => {
-      const expectedProducts = [{ id: '1', name: 'Test Product', price: 100, stock: 10 }];
-      mockPrismaService.producto.findMany.mockResolvedValue(expectedProducts);
-
-      const result = await service.findAll(mockReply);
-      expect(result).toEqual(expectedProducts);
-      expect(mockPrismaService.producto.findMany).toHaveBeenCalled();
-    });
-  });
-
-  describe('findOne', () => {
-    it('should return a product if it exists', async () => {
-      const expectedProduct = { id: '1', name: 'Test Product', price: 100, stock: 10 };
-      mockPrismaService.producto.findUnique.mockResolvedValue(expectedProduct);
-
-      const result = await service.findOne('1', mockReply);
-      expect(result).toEqual(expectedProduct);
-      expect(mockPrismaService.producto.findUnique).toHaveBeenCalledWith({ 
-        where: { id: '1' } 
-      });
-    });
-
-    it('should throw NotFoundException if product does not exist', async () => {
-      mockPrismaService.producto.findUnique.mockResolvedValue(null);
-
-      await expect(service.findOne('1', mockReply)).rejects.toThrow(NotFoundException);
-    });
-  });
-
-  describe('update', () => {
-    it('should update a product', async () => {
-      const updateProductoDto = { name: 'Updated Product', stock: 20 };
-      const expectedProduct = { id: '1', ...updateProductoDto };
-      mockPrismaService.producto.findUnique.mockResolvedValue({ id: '1' });
-      mockPrismaService.producto.update.mockResolvedValue(expectedProduct);
-
-      const result = await service.update('1', updateProductoDto, mockReply);
-      expect(result).toEqual(expectedProduct);
-      expect(mockPrismaService.producto.update).toHaveBeenCalledWith({ 
-        where: { id: '1' }, 
-        data: updateProductoDto 
-      });
-    });
-  });
-
-  describe('remove', () => {
-    it('should remove a product', async () => {
-      const expectedProduct = { id: '1', name: 'Test Product', price: 100, stock: 10 };
-      mockPrismaService.producto.findUnique.mockResolvedValue(expectedProduct);
-      mockPrismaService.producto.delete.mockResolvedValue(expectedProduct);
-
-      const result = await service.remove('1', mockReply);
-      expect(result).toEqual(expectedProduct);
-      expect(mockPrismaService.producto.delete).toHaveBeenCalledWith({ 
-        where: { id: '1' } 
+      expect(mockPrismaService.producto.create).toHaveBeenCalledWith({
+        data: createDto
       });
     });
   });

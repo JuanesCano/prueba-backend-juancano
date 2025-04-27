@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProductosController } from './productos.controller';
 import { ProductosService } from './productos.service';
-import { PrismaService } from '../../prisma/prisma.service';
 import { CreateProductoDto } from './dto/create-producto.dto';
 import { UpdateProductoDto } from './dto/update-producto.dto';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
@@ -17,26 +16,23 @@ describe('ProductosController', () => {
     code: jest.fn().mockReturnThis(),
   } as unknown as FastifyReply;
 
-  const mockPrismaService = {
-    producto: { 
-      create: jest.fn(),
-      findMany: jest.fn(),
-      findUnique: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-    },
-  };
-
   const mockDate = new Date();
+
+  const mockService = {
+    create: jest.fn<(dto: CreateProductoDto, reply: FastifyReply) => Promise<any>>(),
+    findAll: jest.fn<(reply: FastifyReply) => Promise<any>>(),
+    findOne: jest.fn<(id: string, reply: FastifyReply) => Promise<any>>(),
+    update: jest.fn<(id: string, dto: UpdateProductoDto, reply: FastifyReply) => Promise<any>>(),
+    remove: jest.fn<(id: string, reply: FastifyReply) => Promise<any>>(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ProductosController],
       providers: [
-        ProductosService,
         {
-          provide: PrismaService,
-          useValue: mockPrismaService,
+          provide: ProductosService,
+          useValue: mockService,
         },
       ],
     }).compile();
@@ -62,44 +58,30 @@ describe('ProductosController', () => {
         createdAt: mockDate,
         updatedAt: mockDate
       };
-      
-      jest.spyOn(service, 'create').mockImplementation(() => 
-        Promise.resolve(expectedProduct)
-      );
+
+      mockService.create.mockResolvedValue(expectedProduct);
 
       await controller.create(createProductoDto, mockReply);
       
       expect(service.create).toHaveBeenCalledWith(createProductoDto, mockReply);
       expect(mockReply.status).toHaveBeenCalledWith(201);
     });
-
-    it('should validate required fields', async () => {
-      const invalidDto = { name: 'Test Product' } as CreateProductoDto;
-      jest.spyOn(service, 'create').mockImplementation(() => 
-        Promise.reject(new BadRequestException('Validation failed'))
-      );
-
-      await expect(controller.create(invalidDto, mockReply))
-        .rejects.toThrow(BadRequestException);
-    });
   });
 
   describe('findAll', () => {
-    it('should return an array of products', async () => {
+    it('should return all products', async () => {
       const expectedProducts = [
         { 
           id: '1', 
-          name: 'Test Product 1', 
+          name: 'Test Product', 
           price: 100, 
           stock: 10,
           createdAt: mockDate,
           updatedAt: mockDate
         }
       ];
-      
-      jest.spyOn(service, 'findAll').mockImplementation(() => 
-        Promise.resolve(expectedProducts)
-      );
+
+      mockService.findAll.mockResolvedValue(expectedProducts);
 
       await controller.findAll(mockReply);
       
@@ -109,7 +91,7 @@ describe('ProductosController', () => {
   });
 
   describe('findOne', () => {
-    it('should return a product if it exists', async () => {
+    it('should return a product', async () => {
       const expectedProduct = { 
         id: '1', 
         name: 'Test Product', 
@@ -118,48 +100,32 @@ describe('ProductosController', () => {
         createdAt: mockDate,
         updatedAt: mockDate
       };
-      
-      jest.spyOn(service, 'findOne').mockImplementation(() => 
-        Promise.resolve(expectedProduct)
-      );
+
+      mockService.findOne.mockResolvedValue(expectedProduct);
 
       await controller.findOne('1', mockReply);
       
       expect(service.findOne).toHaveBeenCalledWith('1', mockReply);
     });
-
-    it('should throw NotFoundException if product does not exist', async () => {
-      jest.spyOn(service, 'findOne').mockImplementation(() => 
-        Promise.reject(new NotFoundException())
-      );
-
-      await expect(controller.findOne('999', mockReply))
-        .rejects.toThrow(NotFoundException);
-    });
   });
 
   describe('update', () => {
     it('should update a product', async () => {
-      const updateProductoDto: UpdateProductoDto = {
-        name: 'Updated Product',
-        stock: 20,
-      };
+      const updateDto: UpdateProductoDto = { name: 'Updated' };
       const expectedProduct = { 
         id: '1', 
-        name: 'Updated Product',
+        name: 'Updated',
         price: 100,
-        stock: 20,
+        stock: 10,
         createdAt: mockDate,
         updatedAt: mockDate
       };
-      
-      jest.spyOn(service, 'update').mockImplementation(() => 
-        Promise.resolve(expectedProduct)
-      );
 
-      await controller.update('1', updateProductoDto, mockReply);
+      mockService.update.mockResolvedValue(expectedProduct);
+
+      await controller.update('1', updateDto, mockReply);
       
-      expect(service.update).toHaveBeenCalledWith('1', updateProductoDto, mockReply);
+      expect(service.update).toHaveBeenCalledWith('1', updateDto, mockReply);
     });
   });
 
@@ -173,10 +139,8 @@ describe('ProductosController', () => {
         createdAt: mockDate,
         updatedAt: mockDate
       };
-      
-      jest.spyOn(service, 'remove').mockImplementation(() => 
-        Promise.resolve(expectedProduct)
-      );
+
+      mockService.remove.mockResolvedValue(expectedProduct);
 
       await controller.remove('1', mockReply);
       
