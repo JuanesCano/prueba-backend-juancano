@@ -11,6 +11,5 @@ export function response<T>(
     success,
     data,
     message,
-    timestamp: new Date().toISOString()
   });
 }
