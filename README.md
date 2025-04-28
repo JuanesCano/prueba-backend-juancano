@@ -1,63 +1,137 @@
-# 📝 Prueba Técnica - Desarrollador Backend Semi-Senior
+# Prueba Backend
 
-## ⚠️ Antes de comenzar
+Este es un proyecto backend desarrollado con NestJS
 
-Por favor, **lee toda la prueba completa antes de empezar**. El tiempo estimado para completarla es de **2-3 horas**, pero puedes tomar hasta **24 horas** para entregarla. La entrega se realiza a través de un **Pull Request (PR)** en este repositorio.
+## Tecnologías Utilizadas
 
-## 🔥 Instrucciones Generales
+- **NestJS**: Framework para construir aplicaciones del lado del servidor
+- **TypeScript**: Lenguaje de programación tipado
+- **Prisma**: ORM para la gestión de la base de datos
+- **PostgreSQL**: Base de datos relacional
+- **Jest**: Framework de testing
 
-1. **Haz un fork** de este repositorio en tu cuenta de GitHub.
-2. Crea una nueva rama con tu nombre o un identificador único:
-   ```bash
-   git checkout -b tu-nombre
-   ```
-3. Desarrolla tu solución en la rama creada.
-4. Una vez finalizado, sube tus cambios a tu repositorio y abre un **Pull Request (PR)** hacia este repositorio.
-5. **Asegúrate de incluir una breve descripción en el PR** explicando tu enfoque y decisiones técnicas.
-6. Puedes usar **IA o cualquier recurso** que consideres necesario, pero ten en cuenta que podrías ser requerido para sustentar tu solución.
+## Arquitectura y Buenas Prácticas
 
-## 📌 Requerimientos
+### Principios SOLID
+- **Single Responsibility Principle (SRP)**: Cada clase tiene una única responsabilidad
+  - `ProductosService`: Maneja la lógica de negocio de productos
+  - `ProductosController`: Maneja las peticiones HTTP
+  - `PrismaService`: Maneja la conexión con la base de datos
 
-### 1️⃣ Implementación de API en NestJS
+- **Open/Closed Principle (OCP)**: El código está abierto para extensión pero cerrado para modificación
+  - Uso de DTOs para validación de datos
+  - Servicios inyectables que pueden ser extendidos
 
-- Crea un servicio en **NestJS** que exponga endpoints para manejar entidades en **PostgreSQL** usando el ORM de tu preferencia (TypeORM o Prisma).
-- Debe incluir CRUD para una entidad llamada `Productos` con los siguientes campos:
-  - `id` (UUID, PK)
-  - `nombre` (string)
-  - `precio` (decimal)
-  - `stock` (entero)
+- **Liskov Substitution Principle (LSP)**: Las clases derivadas pueden sustituir a las clases base
+  - Implementación de interfaces y tipos genéricos
 
-### 2️⃣ Seguridad y Buenas Prácticas
+- **Interface Segregation Principle (ISP)**: Las interfaces son específicas para cada cliente
+  - DTOs separados para creación y actualización
+  - Servicios con métodos específicos
 
-- Implementa **validaciones** con DTOs en los endpoints.
-- Manejo adecuado de **excepciones**.
-- Configuración de variables de entorno con `.env`.
+- **Dependency Inversion Principle (DIP)**: Dependencias inyectadas a través de constructores
+  - Uso de inyección de dependencias de NestJS
 
-### 3️⃣ Pruebas Unitarias
+### Validación y Seguridad
+- Validación de datos usando class-validator
+- Manejo de errores centralizado
+- Respuestas HTTP estandarizadas
+- Validación de tipos con TypeScript
 
-- Escribe pruebas unitarias para al menos un servicio usando **Jest**.
+### Testing
+- Tests unitarios con Jest
+- Mocks para servicios y repositorios
+- Cobertura de código
+- Tests de integración
 
-### 4️⃣ Conocimientos en AWS (Opcional, suma puntos)
+### Código Limpio
+- Nombres descriptivos y significativos
+- Funciones pequeñas y enfocadas
+- Comentarios explicativos donde es necesario
+- Estructura de carpetas organizada
 
-- Describe cómo desplegarías esta API en **AWS ECS + RDS**.
-- Explica brevemente cómo manejarías secretos con **AWS Secrets Manager**.
-- Opcionalmente, agrega un pequeño **Terraform** para crear el RDS.
+## Requisitos Previos
 
-### 5️⃣ CI/CD con GitHub Actions y Terraform (Opcional, suma puntos)
+- Node.js (versión recomendada: 18.x o superior)
+- PostgreSQL
+- npm
 
-- Crea un workflow en **GitHub Actions** para ejecutar pruebas automáticamente en cada `push` o `PR`.
-- Opcionalmente, agrega un paso en el pipeline para desplegar la API en AWS usando **Terraform**.
+## Instalación
 
-## ⏳ Tiempo Estimado
+1. Clonar el repositorio:
+```bash
+git clone [URL_DEL_REPOSITORIO]
+cd prueba-back
+```
 
-Queremos que tengas el tiempo suficiente para hacerlo bien, pero sin presionarte demasiado. Lo ideal es que puedas completarlo en unas **2-3 horas**, pero puedes tomar hasta **24 horas** para entregarlo.
+2. Instalar dependencias:
+```bash
+npm install
+```
 
-## 📬 Entrega
+3. Configurar la base de datos:
+   - Asegúrate de tener PostgreSQL instalado y corriendo
+   - Configura las variables de entorno necesarias en el .env.template esta el ejemplo de como debe de ir tu .env
 
-- Haz un **Pull Request** con tu código.
-- Asegúrate de que los endpoints sean funcionales.
-- Si tienes comentarios o explicaciones, agrégalas en el `README.md` de tu fork.
+4. Generar el cliente de Prisma:
+```bash
+npm run prisma:generate
+```
 
----
+## Configuración
 
-¡Buena suerte y esperamos ver tu solución! 🚀
+El proyecto utiliza variables de entorno para la configuración. Crea un archivo `.env` en la raíz del proyecto con las siguientes variables:
+
+```env
+DB_URL="postgresql://usuario:contraseña@localhost:5432/nombre_db"
+```
+
+## Ejecución del Proyecto
+
+### Desarrollo
+```bash
+npm run start:dev
+```
+
+### Producción
+```bash
+npm run build
+npm run start:prod
+```
+
+## Testing
+
+El proyecto utiliza Jest como framework de testing. Los siguientes comandos están disponibles:
+
+- Ejecutar todos los tests:
+```bash
+npm test
+```
+
+## Estructura del Proyecto
+
+```
+src/
+├── common/         # Código compartido y utilidades
+├── productos/      # Módulo de productos
+├── app.module.ts   # Módulo principal de la aplicación
+└── main.ts         # Punto de entrada de la aplicación
+```
+
+## Pipeline de Git
+
+El proyecto utiliza GitHub Actions para CI/CD. El pipeline incluye:
+
+1. Instalacion de node
+2. Ejecución de tests
+
+## Scripts Disponibles
+
+- `npm run build`: Compila el proyecto
+- `npm run start`: Inicia el servidor
+- `npm run start:dev`: Inicia el servidor en modo desarrollo con hot-reload
+- `npm run start:debug`: Inicia el servidor en modo debug
+- `npm run start:prod`: Inicia el servidor en modo producción
+- `npm run lint`: Ejecuta el linter
+- `npm run format`: Formatea el código
+- `npm run prisma:generate`: Genera el cliente de Prisma
